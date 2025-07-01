@@ -24,6 +24,9 @@ export const authAPI = {
       const data = await response.json()
       console.log("Login success:", data)
 
+      // Store username for later use
+      userStorage.setUsername(username)
+
       return {
         token: data.token || data.access_token || data.jwt || "default-token",
         user: data.user || {
@@ -61,6 +64,9 @@ export const authAPI = {
       const data = await response.json()
       console.log("Register success:", data)
 
+      // Store username for later use
+      userStorage.setUsername(username)
+
       return {
         token: data.token || data.access_token || data.jwt || "default-token",
         user: data.user || {
@@ -77,21 +83,24 @@ export const authAPI = {
 
   async verifyToken(token: string) {
     // Since there's no verify endpoint, we'll decode the token client-side
+    // and use stored username for consistency
     try {
+      const storedUsername = userStorage.getUsername()
+
       if (token.includes(".")) {
         // JWT token
         const payload = JSON.parse(atob(token.split(".")[1]))
         return {
           id: payload.user_id || payload.id || Date.now(),
-          email: payload.email || "user@example.com",
-          name: payload.name || payload.username || "User",
+          email: payload.email || `${storedUsername || "user"}@example.com`,
+          name: payload.name || payload.username || storedUsername || "User",
         }
       } else {
-        // Simple token - create basic user data
+        // Simple token - create basic user data with stored username
         return {
           id: Date.now(),
-          email: "user@example.com",
-          name: "User",
+          email: `${storedUsername || "user"}@example.com`,
+          name: storedUsername || "User",
         }
       }
     } catch (error) {
@@ -115,5 +124,22 @@ export const tokenStorage = {
   removeToken(): void {
     if (typeof window === "undefined") return
     localStorage.removeItem("auth-token")
+  },
+}
+
+export const userStorage = {
+  getUsername(): string | null {
+    if (typeof window === "undefined") return null
+    return localStorage.getItem("auth-username")
+  },
+
+  setUsername(username: string): void {
+    if (typeof window === "undefined") return
+    localStorage.setItem("auth-username", username)
+  },
+
+  removeUsername(): void {
+    if (typeof window === "undefined") return
+    localStorage.removeItem("auth-username")
   },
 }

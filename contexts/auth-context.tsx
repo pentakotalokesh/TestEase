@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { createContext, useContext, useEffect, useState } from "react"
-import { authAPI, tokenStorage } from "@/lib/auth"
+import { authAPI, tokenStorage, userStorage } from "@/lib/auth"
 
 interface User {
   id: number
@@ -34,6 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
           console.error("Token verification failed:", error)
           tokenStorage.removeToken()
+          userStorage.removeUsername()
         }
       }
       setLoading(false)
@@ -56,6 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     tokenStorage.removeToken()
+    userStorage.removeUsername()
     setUser(null)
   }
 
