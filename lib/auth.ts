@@ -41,16 +41,22 @@ export const authAPI = {
     }
   },
 
-  async register(username: string, password: string) {
+  async register(username: string, password: string, email: string, firstName: string, lastName: string) {
     try {
-      console.log("Attempting registration with:", { username })
+      console.log("Attempting registration with:", { username, email, firstName, lastName })
 
       const response = await fetch("https://cowek1275.pythonanywhere.com/api/register/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({
+          username,
+          password,
+          email,
+          first_name: firstName,
+          last_name: lastName,
+        }),
       })
 
       console.log("Register response status:", response.status)
@@ -71,8 +77,8 @@ export const authAPI = {
         token: data.token || data.access_token || data.jwt || "default-token",
         user: data.user || {
           id: data.id || Date.now(),
-          email: data.email || `${username}@example.com`,
-          name: data.name || data.username || username,
+          email: data.email || email,
+          name: data.name || data.username || `${firstName} ${lastName}` || username,
         },
       }
     } catch (error) {
