@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("")
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
@@ -25,7 +25,7 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      await login(username, password)
+      await login(email, password)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed")
     } finally {
@@ -49,13 +49,13 @@ export default function LoginPage() {
                 </Alert>
               )}
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="username"
-                  type="text"
-                  placeholder="Username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  id="email"
+                  type="email"
+                  placeholder="user@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
@@ -64,13 +64,13 @@ export default function LoginPage() {
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Password"
+                  placeholder="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
-              <div className="text-sm text-gray-600">Enter your username and password</div>
+              <div className="text-sm text-gray-600">Demo credentials: user@example.com / password</div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">
               <Button type="submit" className="w-full" disabled={loading}>

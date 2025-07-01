@@ -13,8 +13,8 @@ interface User {
 interface AuthContextType {
   user: User | null
   loading: boolean
-  login: (username: string, password: string) => Promise<void>
-  register: (username: string, password: string) => Promise<void>
+  login: (email: string, password: string) => Promise<void>
+  register: (email: string, password: string, name: string) => Promise<void>
   logout: () => void
 }
 
@@ -32,7 +32,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const userData = await authAPI.verifyToken(token)
           setUser(userData)
         } catch (error) {
-          console.error("Token verification failed:", error)
           tokenStorage.removeToken()
         }
       }
@@ -42,14 +41,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initAuth()
   }, [])
 
-  const login = async (username: string, password: string) => {
-    const { token, user } = await authAPI.login(username, password)
+  const login = async (email: string, password: string) => {
+    const { token, user } = await authAPI.login(email, password)
     tokenStorage.setToken(token)
     setUser(user)
   }
 
-  const register = async (username: string, password: string) => {
-    const { token, user } = await authAPI.register(username, password)
+  const register = async (email: string, password: string, name: string) => {
+    const { token, user } = await authAPI.register(email, password, name)
     tokenStorage.setToken(token)
     setUser(user)
   }

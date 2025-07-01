@@ -6,14 +6,15 @@ import { useState } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import { AuthGuard } from "@/components/auth-guard"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
 
 export default function RegisterPage() {
-  const [username, setUsername] = useState("")
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState("")
@@ -37,7 +38,7 @@ export default function RegisterPage() {
     setLoading(true)
 
     try {
-      await register(username, password)
+      await register(email, password, name)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed")
     } finally {
@@ -61,13 +62,24 @@ export default function RegisterPage() {
                 </Alert>
               )}
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="name">Full Name</Label>
                 <Input
-                  id="username"
+                  id="name"
                   type="text"
-                  placeholder="Username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="John Doe"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="john@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
