@@ -304,7 +304,7 @@ export default function DashboardPage() {
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="flex items-center gap-2 p-2">
+                      <Button variant="ghost" className="flex items-center gap-2">
                         <Avatar className="h-8 w-8">
                           <AvatarImage src="/placeholder-user.jpg" alt={user?.name} />
                           <AvatarFallback>
@@ -319,22 +319,19 @@ export default function DashboardPage() {
                         <ChevronDown className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuContent align="end">
                       <DropdownMenuLabel>My Account</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="cursor-pointer">
+                      <DropdownMenuItem>
                         <User className="mr-2 h-4 w-4" />
                         Profile
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="cursor-pointer">
+                      <DropdownMenuItem>
                         <Settings className="mr-2 h-4 w-4" />
                         Settings
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        className="cursor-pointer text-red-600 focus:text-red-600"
-                        onClick={handleLogout}
-                      >
+                      <DropdownMenuItem onClick={handleLogout}>
                         <LogOut className="mr-2 h-4 w-4" />
                         Logout
                       </DropdownMenuItem>
@@ -644,8 +641,9 @@ export default function DashboardPage() {
                                     <AlertDialogFooter>
                                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                                       <AlertDialogAction
-                                        className="bg-red-600 hover:bg-red-700"
-                                        onClick={() => handleDeleteUser(user.id)}
+                                        onClick={() => {
+                                          handleDeleteUser(user.id)
+                                        }}
                                       >
                                         Delete
                                       </AlertDialogAction>
@@ -743,8 +741,9 @@ export default function DashboardPage() {
                                     <AlertDialogFooter>
                                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                                       <AlertDialogAction
-                                        className="bg-red-600 hover:bg-red-700"
-                                        onClick={() => handleDeleteProduct(product.id)}
+                                        onClick={() => {
+                                          handleDeleteProduct(product.id)
+                                        }}
                                       >
                                         Delete
                                       </AlertDialogAction>
