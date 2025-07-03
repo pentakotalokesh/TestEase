@@ -92,3 +92,63 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-muted;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/30 rounded-md;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/50;
+}
+
+/* Iframe security and styling */
+iframe {
+  border: none;
+  border-radius: 0.375rem;
+}
+
+/* Calendar specific improvements */
+.rdp {
+  --rdp-cell-size: 32px;
+  --rdp-accent-color: hsl(var(--primary));
+  --rdp-background-color: hsl(var(--background));
+  --rdp-accent-color-dark: hsl(var(--primary));
+  --rdp-background-color-dark: hsl(var(--background));
+}
+
+.rdp-months {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 640px) {
+  .rdp-months {
+    flex-direction: row;
+  }
+}
+
+/* Dark mode improvements */
+.dark .rdp-day_today {
+  font-weight: 600;
+}
+
+.dark iframe {
+  filter: brightness(0.9);
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .rdp {
+    --rdp-cell-size: 28px;
+  }
+}

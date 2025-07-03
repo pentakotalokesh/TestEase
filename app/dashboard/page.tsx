@@ -75,6 +75,8 @@ import {
   Eye,
   Plus,
   Search,
+  ExternalLink,
+  Monitor,
 } from "lucide-react"
 import { useState } from "react"
 
@@ -131,6 +133,10 @@ export default function DashboardPage() {
   const [editingProduct, setEditingProduct] = useState<ProductData | null>(null)
   const [isProductDialogOpen, setIsProductDialogOpen] = useState(false)
   const [productSearchTerm, setProductSearchTerm] = useState("")
+
+  // State for external content
+  const [isIframeDialogOpen, setIsIframeDialogOpen] = useState(false)
+  const [currentIframeUrl, setCurrentIframeUrl] = useState("")
 
   // Form states for new/edit user
   const [userForm, setUserForm] = useState({
@@ -272,6 +278,16 @@ export default function DashboardPage() {
     })
   }
 
+  // External content functions
+  const openInNewTab = (url: string) => {
+    window.open(url, "_blank", "noopener,noreferrer")
+  }
+
+  const openInIframe = (url: string) => {
+    setCurrentIframeUrl(url)
+    setIsIframeDialogOpen(true)
+  }
+
   // Filter functions
   const filteredUsers = users.filter(
     (user) =>
@@ -289,22 +305,40 @@ export default function DashboardPage() {
   return (
     <AuthGuard requireAuth={true}>
       <TooltipProvider>
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-background">
           {/* Header */}
-          <header className="bg-white shadow-sm border-b sticky top-0 z-50">
+          <header className="bg-white dark:bg-card shadow-sm border-b sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex justify-between items-center py-4">
                 <div className="flex items-center space-x-4">
-                  <h1 className="text-2xl font-bold text-gray-900">UI Components Dashboard</h1>
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-foreground">UI Components Dashboard</h1>
                   <Badge variant="secondary">Testing Environment</Badge>
                 </div>
                 <div className="flex items-center space-x-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openInNewTab("https://example.com")}
+                    className="gap-2"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    New Tab
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openInIframe("https://example.com")}
+                    className="gap-2"
+                  >
+                    <Monitor className="h-4 w-4" />
+                    Iframe
+                  </Button>
                   <Button variant="ghost" size="icon">
                     <Bell className="h-4 w-4" />
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="flex items-center gap-2">
+                      <Button variant="ghost" className="flex items-center gap-2 p-2">
                         <Avatar className="h-8 w-8">
                           <AvatarImage src="/placeholder-user.jpg" alt={user?.name} />
                           <AvatarFallback>
@@ -319,19 +353,22 @@ export default function DashboardPage() {
                         <ChevronDown className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="end" className="w-56">
                       <DropdownMenuLabel>My Account</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer">
                         <User className="mr-2 h-4 w-4" />
                         Profile
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer">
                         <Settings className="mr-2 h-4 w-4" />
                         Settings
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout}>
+                      <DropdownMenuItem
+                        className="cursor-pointer text-red-600 focus:text-red-600"
+                        onClick={handleLogout}
+                      >
                         <LogOut className="mr-2 h-4 w-4" />
                         Logout
                       </DropdownMenuItem>
@@ -344,13 +381,14 @@ export default function DashboardPage() {
 
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-6">
+              <TabsList className="grid w-full grid-cols-7">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="forms">Forms</TabsTrigger>
                 <TabsTrigger value="data">Data Tables</TabsTrigger>
                 <TabsTrigger value="feedback">Feedback</TabsTrigger>
                 <TabsTrigger value="navigation">Navigation</TabsTrigger>
                 <TabsTrigger value="layout">Layout</TabsTrigger>
+                <TabsTrigger value="external">External</TabsTrigger>
               </TabsList>
 
               {/* Overview Tab */}
@@ -434,7 +472,7 @@ export default function DashboardPage() {
                       <CardDescription>Interactive date picker</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-md border" />
+                      <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-md border w-full" />
                     </CardContent>
                   </Card>
                 </div>
@@ -641,9 +679,8 @@ export default function DashboardPage() {
                                     <AlertDialogFooter>
                                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                                       <AlertDialogAction
-                                        onClick={() => {
-                                          handleDeleteUser(user.id)
-                                        }}
+                                        className="bg-red-600 hover:bg-red-700"
+                                        onClick={() => handleDeleteUser(user.id)}
                                       >
                                         Delete
                                       </AlertDialogAction>
@@ -741,9 +778,8 @@ export default function DashboardPage() {
                                     <AlertDialogFooter>
                                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                                       <AlertDialogAction
-                                        onClick={() => {
-                                          handleDeleteProduct(product.id)
-                                        }}
+                                        className="bg-red-600 hover:bg-red-700"
+                                        onClick={() => handleDeleteProduct(product.id)}
                                       >
                                         Delete
                                       </AlertDialogAction>
@@ -779,7 +815,7 @@ export default function DashboardPage() {
                         <AlertTitle>Error</AlertTitle>
                         <AlertDescription>Something went wrong. Please try again.</AlertDescription>
                       </Alert>
-                      <Alert className="border-green-200 bg-green-50 text-green-800">
+                      <Alert className="border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
                         <CheckCircle className="h-4 w-4" />
                         <AlertTitle>Success</AlertTitle>
                         <AlertDescription>Your action was completed successfully!</AlertDescription>
@@ -798,9 +834,15 @@ export default function DashboardPage() {
                         <Badge variant="secondary">Secondary</Badge>
                         <Badge variant="destructive">Destructive</Badge>
                         <Badge variant="outline">Outline</Badge>
-                        <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Success</Badge>
-                        <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">Warning</Badge>
-                        <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Info</Badge>
+                        <Badge className="bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-200">
+                          Success
+                        </Badge>
+                        <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900 dark:text-yellow-200">
+                          Warning
+                        </Badge>
+                        <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-200">
+                          Info
+                        </Badge>
                       </div>
                     </CardContent>
                   </Card>
@@ -1041,6 +1083,110 @@ export default function DashboardPage() {
                   </CardContent>
                 </Card>
               </TabsContent>
+
+              {/* External Tab - NEW */}
+              <TabsContent value="external" className="space-y-6">
+                <div className="grid gap-6 md:grid-cols-2">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>External Links</CardTitle>
+                      <CardDescription>Open external websites in new tabs</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start gap-2 bg-transparent"
+                        onClick={() => openInNewTab("https://github.com")}
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        Open GitHub
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start gap-2 bg-transparent"
+                        onClick={() => openInNewTab("https://stackoverflow.com")}
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        Open Stack Overflow
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start gap-2 bg-transparent"
+                        onClick={() => openInNewTab("https://developer.mozilla.org")}
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        Open MDN Docs
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start gap-2 bg-transparent"
+                        onClick={() => openInNewTab("https://tailwindcss.com")}
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        Open Tailwind CSS
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Iframe Content</CardTitle>
+                      <CardDescription>View external content in embedded frames</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start gap-2 bg-transparent"
+                        onClick={() =>
+                          openInIframe(
+                            "https://www.openstreetmap.org/export/embed.html?bbox=-0.004017949104309083%2C51.47612752641776%2C0.00030577182769775396%2C51.478569861898606&layer=mapnik",
+                          )
+                        }
+                      >
+                        <Monitor className="h-4 w-4" />
+                        Open Map in Iframe
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start gap-2 bg-transparent"
+                        onClick={() => openInIframe("https://example.com")}
+                      >
+                        <Monitor className="h-4 w-4" />
+                        Open Example.com
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start gap-2 bg-transparent"
+                        onClick={() => openInIframe("https://httpbin.org/html")}
+                      >
+                        <Monitor className="h-4 w-4" />
+                        Open Test HTML
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Embedded Map Example</CardTitle>
+                    <CardDescription>Direct iframe embedding with nested content support</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="w-full h-64 border rounded-md overflow-hidden">
+                      <iframe
+                        src="https://www.openstreetmap.org/export/embed.html?bbox=-0.004017949104309083%2C51.47612752641776%2C0.00030577182769775396%2C51.478569861898606&layer=mapnik"
+                        className="w-full h-full"
+                        title="OpenStreetMap"
+                        sandbox="allow-scripts allow-same-origin"
+                      />
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      This is an embedded map showing London. Iframes support nested content and are sandboxed for
+                      security.
+                    </p>
+                  </CardContent>
+                </Card>
+              </TabsContent>
             </Tabs>
           </main>
         </div>
@@ -1204,6 +1350,29 @@ export default function DashboardPage() {
                 Cancel
               </Button>
               <Button onClick={handleSaveProduct}>{editingProduct ? "Update" : "Create"}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Iframe Dialog */}
+        <Dialog open={isIframeDialogOpen} onOpenChange={setIsIframeDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[80vh]">
+            <DialogHeader>
+              <DialogTitle>External Content</DialogTitle>
+              <DialogDescription>
+                This iframe shows external content with nested iframe support and security sandboxing.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="w-full h-96 border rounded-md overflow-hidden">
+              <iframe
+                src={currentIframeUrl}
+                className="w-full h-full"
+                title="External Content"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+              />
+            </div>
+            <DialogFooter>
+              <Button onClick={() => setIsIframeDialogOpen(false)}>Close</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
