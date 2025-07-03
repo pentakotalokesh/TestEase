@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useAuth } from "@/contexts/auth-context"
 import { AuthGuard } from "@/components/auth-guard"
 import { Button } from "@/components/ui/button"
@@ -15,10 +17,8 @@ import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   DropdownMenu,
@@ -28,15 +28,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,36 +41,33 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Calendar } from "@/components/ui/calendar"
-import { Skeleton } from "@/components/ui/skeleton"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { toast } from "@/hooks/use-toast"
 import {
   LogOut,
   User,
-  CalendarIcon,
   Settings,
   Bell,
-  Heart,
   Star,
-  Download,
   Edit,
   Trash2,
   ChevronDown,
   Info,
-  AlertCircle,
   CheckCircle,
   Eye,
   Plus,
   Search,
   ExternalLink,
   Monitor,
+  AlertTriangle,
+  XCircle,
+  Send,
 } from "lucide-react"
-import { useState } from "react"
+import { useState, useRef } from "react"
 
 // Types for our data
 interface UserData {
@@ -138,6 +127,11 @@ export default function DashboardPage() {
   const [isIframeDialogOpen, setIsIframeDialogOpen] = useState(false)
   const [currentIframeUrl, setCurrentIframeUrl] = useState("")
 
+  // State for drag and drop
+  const [draggedFiles, setDraggedFiles] = useState<string[]>([])
+  const [isDragOver, setIsDragOver] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   // Form states for new/edit user
   const [userForm, setUserForm] = useState({
     name: "",
@@ -153,6 +147,14 @@ export default function DashboardPage() {
     price: "",
     stock: 0,
     rating: 0,
+  })
+
+  // Contact form state
+  const [contactForm, setContactForm] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
   })
 
   const handleLogout = () => {
@@ -288,6 +290,102 @@ export default function DashboardPage() {
     setIsIframeDialogOpen(true)
   }
 
+  // Contact form submission
+  const handleContactSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!contactForm.name || !contactForm.email || !contactForm.message) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Simulate form submission
+    setTimeout(() => {
+      toast({
+        title: "Success!",
+        description: "Your message has been submitted successfully. We'll get back to you soon!",
+      })
+      setContactForm({ name: "", email: "", subject: "", message: "" })
+    }, 1000)
+  }
+
+  // Drag and drop handlers
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+
+    const files = Array.from(e.dataTransfer.files)
+    const fileNames = files.map((file) => file.name)
+    setDraggedFiles((prev) => [...prev, ...fileNames])
+
+    toast({
+      title: "Files Dropped",
+      description: `${files.length} file(s) added to the drop zone.`,
+    })
+  }
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    const fileNames = files.map((file) => file.name)
+    setDraggedFiles((prev) => [...prev, ...fileNames])
+
+    toast({
+      title: "Files Selected",
+      description: `${files.length} file(s) added to the drop zone.`,
+    })
+  }
+
+  const clearFiles = () => {
+    setDraggedFiles([])
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
+
+  // Alert dialog handlers
+  const showInfoAlert = () => {
+    toast({
+      title: "Information",
+      description: "This is an informational message.",
+    })
+  }
+
+  const showSuccessAlert = () => {
+    toast({
+      title: "Success!",
+      description: "Operation completed successfully.",
+    })
+  }
+
+  const showWarningAlert = () => {
+    toast({
+      title: "Warning",
+      description: "Please review your action before proceeding.",
+      variant: "destructive",
+    })
+  }
+
+  const showErrorAlert = () => {
+    toast({
+      title: "Error",
+      description: "Something went wrong. Please try again.",
+      variant: "destructive",
+    })
+  }
+
   // Filter functions
   const filteredUsers = users.filter(
     (user) =>
@@ -393,7 +491,7 @@ export default function DashboardPage() {
 
               {/* Overview Tab */}
               <TabsContent value="overview" className="space-y-6">
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -412,16 +510,6 @@ export default function DashboardPage() {
                     <CardContent>
                       <div className="text-2xl font-bold">{products.length}</div>
                       <p className="text-xs text-muted-foreground">Products in inventory</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Total Stock</CardTitle>
-                      <Download className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{products.reduce((sum, p) => sum + p.stock, 0)}</div>
-                      <p className="text-xs text-muted-foreground">Items in stock</p>
                     </CardContent>
                   </Card>
                   <Card>
@@ -560,24 +648,59 @@ export default function DashboardPage() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>Button Variants</CardTitle>
-                    <CardDescription>Different button styles and states</CardDescription>
+                    <CardTitle>Contact Form</CardTitle>
+                    <CardDescription>Complete form with submission handling</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex flex-wrap gap-4">
-                      <Button>Default</Button>
-                      <Button variant="secondary">Secondary</Button>
-                      <Button variant="destructive">Destructive</Button>
-                      <Button variant="outline">Outline</Button>
-                      <Button variant="ghost">Ghost</Button>
-                      <Button variant="link">Link</Button>
-                      <Button size="sm">Small</Button>
-                      <Button size="lg">Large</Button>
-                      <Button disabled>Disabled</Button>
-                      <Button size="icon">
-                        <Heart className="h-4 w-4" />
+                    <form onSubmit={handleContactSubmit} className="space-y-4">
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="contact-name">Name *</Label>
+                          <Input
+                            id="contact-name"
+                            value={contactForm.name}
+                            onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                            placeholder="Your full name"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="contact-email">Email *</Label>
+                          <Input
+                            id="contact-email"
+                            type="email"
+                            value={contactForm.email}
+                            onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                            placeholder="your.email@example.com"
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="contact-subject">Subject</Label>
+                        <Input
+                          id="contact-subject"
+                          value={contactForm.subject}
+                          onChange={(e) => setContactForm({ ...contactForm, subject: e.target.value })}
+                          placeholder="What is this about?"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="contact-message">Message *</Label>
+                        <Textarea
+                          id="contact-message"
+                          value={contactForm.message}
+                          onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                          placeholder="Your message here..."
+                          rows={4}
+                          required
+                        />
+                      </div>
+                      <Button type="submit" className="w-full gap-2">
+                        <Send className="h-4 w-4" />
+                        Submit Message
                       </Button>
-                    </div>
+                    </form>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -802,72 +925,51 @@ export default function DashboardPage() {
                   <Card>
                     <CardHeader>
                       <CardTitle>Alerts</CardTitle>
-                      <CardDescription>Different alert types and styles</CardDescription>
+                      <CardDescription>Various alert components</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <Alert>
-                        <Info className="h-4 w-4" />
-                        <AlertTitle>Information</AlertTitle>
-                        <AlertDescription>This is an informational alert with some details.</AlertDescription>
-                      </Alert>
-                      <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Error</AlertTitle>
-                        <AlertDescription>Something went wrong. Please try again.</AlertDescription>
-                      </Alert>
-                      <Alert className="border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
-                        <CheckCircle className="h-4 w-4" />
-                        <AlertTitle>Success</AlertTitle>
-                        <AlertDescription>Your action was completed successfully!</AlertDescription>
-                      </Alert>
+                      <div>
+                        <Button onClick={showInfoAlert} className="gap-2">
+                          <Info className="h-4 w-4" />
+                          Show Info Alert
+                        </Button>
+                      </div>
+                      <div>
+                        <Button onClick={showSuccessAlert} className="gap-2">
+                          <CheckCircle className="h-4 w-4" />
+                          Show Success Alert
+                        </Button>
+                      </div>
+                      <div>
+                        <Button onClick={showWarningAlert} className="gap-2">
+                          <AlertTriangle className="h-4 w-4" />
+                          Show Warning Alert
+                        </Button>
+                      </div>
+                      <div>
+                        <Button onClick={showErrorAlert} className="gap-2">
+                          <XCircle className="h-4 w-4" />
+                          Show Error Alert
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
 
                   <Card>
                     <CardHeader>
-                      <CardTitle>Badges</CardTitle>
-                      <CardDescription>Various badge styles and variants</CardDescription>
+                      <CardTitle>Hover Card</CardTitle>
+                      <CardDescription>Interactive hover card</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="flex flex-wrap gap-2">
-                        <Badge>Default</Badge>
-                        <Badge variant="secondary">Secondary</Badge>
-                        <Badge variant="destructive">Destructive</Badge>
-                        <Badge variant="outline">Outline</Badge>
-                        <Badge className="bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-200">
-                          Success
-                        </Badge>
-                        <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900 dark:text-yellow-200">
-                          Warning
-                        </Badge>
-                        <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-200">
-                          Info
-                        </Badge>
-                      </div>
+                      <HoverCard>
+                        <HoverCardTrigger className="text-blue-500 underline">Hover me</HoverCardTrigger>
+                        <HoverCardContent className="w-80">
+                          This is a hover card. It appears when you hover over the trigger.
+                        </HoverCardContent>
+                      </HoverCard>
                     </CardContent>
                   </Card>
                 </div>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Loading States</CardTitle>
-                    <CardDescription>Skeleton loaders and loading indicators</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-[250px]" />
-                      <Skeleton className="h-4 w-[200px]" />
-                      <Skeleton className="h-4 w-[150px]" />
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <Skeleton className="h-12 w-12 rounded-full" />
-                      <div className="space-y-2">
-                        <Skeleton className="h-4 w-[200px]" />
-                        <Skeleton className="h-4 w-[160px]" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
               </TabsContent>
 
               {/* Navigation Tab */}
@@ -875,507 +977,143 @@ export default function DashboardPage() {
                 <div className="grid gap-6 md:grid-cols-2">
                   <Card>
                     <CardHeader>
-                      <CardTitle>Accordion</CardTitle>
-                      <CardDescription>Collapsible content sections</CardDescription>
+                      <CardTitle>Dropdown Menu</CardTitle>
+                      <CardDescription>Interactive dropdown menu</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <Accordion type="single" collapsible className="w-full">
-                        <AccordionItem value="item-1">
-                          <AccordionTrigger>Is it accessible?</AccordionTrigger>
-                          <AccordionContent>Yes. It adheres to the WAI-ARIA design pattern.</AccordionContent>
-                        </AccordionItem>
-                        <AccordionItem value="item-2">
-                          <AccordionTrigger>Is it styled?</AccordionTrigger>
-                          <AccordionContent>
-                            Yes. It comes with default styles that matches the other components' aesthetic.
-                          </AccordionContent>
-                        </AccordionItem>
-                        <AccordionItem value="item-3">
-                          <AccordionTrigger>Is it animated?</AccordionTrigger>
-                          <AccordionContent>
-                            Yes. It's animated by default, but you can disable it if you prefer.
-                          </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline">Dropdown</Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-56">
+                          <DropdownMenuItem className="cursor-pointer">Option 1</DropdownMenuItem>
+                          <DropdownMenuItem className="cursor-pointer">Option 2</DropdownMenuItem>
+                          <DropdownMenuItem className="cursor-pointer">Option 3</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </CardContent>
                   </Card>
 
                   <Card>
                     <CardHeader>
-                      <CardTitle>Hover Card</CardTitle>
-                      <CardDescription>Hover to reveal additional content</CardDescription>
+                      <CardTitle>Sheet</CardTitle>
+                      <CardDescription>Interactive sheet component</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <HoverCard>
-                        <HoverCardTrigger asChild>
-                          <Button variant="link">@nextjs</Button>
-                        </HoverCardTrigger>
-                        <HoverCardContent className="w-80">
-                          <div className="flex justify-between space-x-4">
-                            <Avatar>
-                              <AvatarImage src="https://github.com/vercel.png" />
-                              <AvatarFallback>VC</AvatarFallback>
-                            </Avatar>
-                            <div className="space-y-1">
-                              <h4 className="text-sm font-semibold">@nextjs</h4>
-                              <p className="text-sm">The React Framework – created and maintained by @vercel.</p>
-                              <div className="flex items-center pt-2">
-                                <CalendarIcon className="mr-2 h-4 w-4 opacity-70" />
-                                <span className="text-xs text-muted-foreground">Joined December 2021</span>
-                              </div>
-                            </div>
-                          </div>
-                        </HoverCardContent>
-                      </HoverCard>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Dialog & Sheet Examples</CardTitle>
-                    <CardDescription>Modal dialogs and slide-out sheets</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex space-x-4">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button>Open Dialog</Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Are you absolutely sure?</DialogTitle>
-                            <DialogDescription>
-                              This action cannot be undone. This will permanently delete your account and remove your
-                              data from our servers.
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="flex justify-end space-x-2">
-                            <Button variant="outline">Cancel</Button>
-                            <Button variant="destructive">Delete</Button>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-
                       <Sheet>
                         <SheetTrigger asChild>
                           <Button variant="outline">Open Sheet</Button>
                         </SheetTrigger>
-                        <SheetContent>
+                        <SheetContent className="w-full max-w-2xl">
                           <SheetHeader>
-                            <SheetTitle>Edit profile</SheetTitle>
-                            <SheetDescription>
-                              Make changes to your profile here. Click save when you're done.
-                            </SheetDescription>
+                            <SheetTitle>Sheet Title</SheetTitle>
                           </SheetHeader>
-                          <div className="grid gap-4 py-4">
-                            <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor="name" className="text-right">
-                                Name
-                              </Label>
-                              <Input id="name" value="Pedro Duarte" className="col-span-3" />
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor="username" className="text-right">
-                                Username
-                              </Label>
-                              <Input id="username" value="@peduarte" className="col-span-3" />
-                            </div>
-                          </div>
-                          <Button>Save changes</Button>
+                          <SheetDescription>
+                            This is a sheet component. It can be used for modals or side panels.
+                          </SheetDescription>
                         </SheetContent>
                       </Sheet>
-
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button variant="outline">Open Popover</Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-80">
-                          <div className="grid gap-4">
-                            <div className="space-y-2">
-                              <h4 className="font-medium leading-none">Dimensions</h4>
-                              <p className="text-sm text-muted-foreground">Set the dimensions for the layer.</p>
-                            </div>
-                            <div className="grid gap-2">
-                              <div className="grid grid-cols-3 items-center gap-4">
-                                <Label htmlFor="width">Width</Label>
-                                <Input id="width" defaultValue="100%" className="col-span-2 h-8" />
-                              </div>
-                              <div className="grid grid-cols-3 items-center gap-4">
-                                <Label htmlFor="height">Height</Label>
-                                <Input id="height" defaultValue="25px" className="col-span-2 h-8" />
-                              </div>
-                            </div>
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </div>
               </TabsContent>
 
               {/* Layout Tab */}
               <TabsContent value="layout" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Aspect Ratio</CardTitle>
-                    <CardDescription>Maintain consistent aspect ratios</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-2">16:9 Aspect Ratio</p>
-                        <AspectRatio ratio={16 / 9} className="bg-muted rounded-md">
-                          <div className="flex items-center justify-center h-full">
-                            <p className="text-sm text-muted-foreground">16:9 Content</p>
-                          </div>
-                        </AspectRatio>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-2">1:1 Aspect Ratio</p>
-                        <AspectRatio ratio={1} className="bg-muted rounded-md">
-                          <div className="flex items-center justify-center h-full">
-                            <p className="text-sm text-muted-foreground">1:1 Content</p>
-                          </div>
-                        </AspectRatio>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="grid gap-6 md:grid-cols-2">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Aspect Ratio</CardTitle>
+                      <CardDescription>Responsive aspect ratio component</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <AspectRatio ratio={16 / 9}>
+                        <div className="bg-primary/5 flex items-center justify-center">16:9 Aspect Ratio</div>
+                      </AspectRatio>
+                    </CardContent>
+                  </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Scroll Area</CardTitle>
-                    <CardDescription>Scrollable content areas</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ScrollArea className="h-72 w-full rounded-md border p-4">
-                      <div className="space-y-4">
-                        {Array.from({ length: 50 }, (_, i) => (
-                          <div key={i} className="text-sm">
-                            <strong>Item {i + 1}</strong>
-                            <p className="text-muted-foreground">
-                              This is a scrollable item with some content that demonstrates the scroll area component.
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Separators</CardTitle>
-                    <CardDescription>Visual dividers for content sections</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <p>Content above separator</p>
-                      <Separator className="my-4" />
-                      <p>Content below separator</p>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <span>Left content</span>
-                      <Separator orientation="vertical" className="h-4" />
-                      <span>Right content</span>
-                    </div>
-                  </CardContent>
-                </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Scroll Area</CardTitle>
+                      <CardDescription>Scrollable content area</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ScrollArea className="h-48">
+                        <div className="p-4">
+                          Scrollable content goes here. You can add more text or elements to see the scroll effect.
+                        </div>
+                      </ScrollArea>
+                    </CardContent>
+                  </Card>
+                </div>
               </TabsContent>
 
-              {/* External Tab - NEW */}
+              {/* External Tab */}
               <TabsContent value="external" className="space-y-6">
                 <div className="grid gap-6 md:grid-cols-2">
                   <Card>
                     <CardHeader>
-                      <CardTitle>External Links</CardTitle>
-                      <CardDescription>Open external websites in new tabs</CardDescription>
+                      <CardTitle>Iframe Dialog</CardTitle>
+                      <CardDescription>Open external content in an iframe</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start gap-2 bg-transparent"
-                        onClick={() => openInNewTab("https://github.com")}
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                        Open GitHub
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start gap-2 bg-transparent"
-                        onClick={() => openInNewTab("https://stackoverflow.com")}
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                        Open Stack Overflow
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start gap-2 bg-transparent"
-                        onClick={() => openInNewTab("https://developer.mozilla.org")}
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                        Open MDN Docs
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start gap-2 bg-transparent"
-                        onClick={() => openInNewTab("https://tailwindcss.com")}
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                        Open Tailwind CSS
-                      </Button>
+                    <CardContent>
+                      <Dialog open={isIframeDialogOpen} onOpenChange={setIsIframeDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline">Open Iframe</Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                          <DialogHeader>
+                            <DialogTitle>External Content</DialogTitle>
+                          </DialogHeader>
+                          <iframe src={currentIframeUrl} className="w-full h-full border" />
+                        </DialogContent>
+                      </Dialog>
                     </CardContent>
                   </Card>
 
                   <Card>
                     <CardHeader>
-                      <CardTitle>Iframe Content</CardTitle>
-                      <CardDescription>View external content in embedded frames</CardDescription>
+                      <CardTitle>Drag and Drop</CardTitle>
+                      <CardDescription>Drag and drop files</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start gap-2 bg-transparent"
-                        onClick={() =>
-                          openInIframe(
-                            "https://www.openstreetmap.org/export/embed.html?bbox=-0.004017949104309083%2C51.47612752641776%2C0.00030577182769775396%2C51.478569861898606&layer=mapnik",
-                          )
-                        }
+                    <CardContent>
+                      <div
+                        className={`border-dashed border-2 p-4 rounded ${
+                          isDragOver ? "border-primary" : "border-muted-foreground"
+                        }`}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
                       >
-                        <Monitor className="h-4 w-4" />
-                        Open Map in Iframe
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start gap-2 bg-transparent"
-                        onClick={() => openInIframe("https://example.com")}
-                      >
-                        <Monitor className="h-4 w-4" />
-                        Open Example.com
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start gap-2 bg-transparent"
-                        onClick={() => openInIframe("https://httpbin.org/html")}
-                      >
-                        <Monitor className="h-4 w-4" />
-                        Open Test HTML
-                      </Button>
+                        <p className="text-center mb-4">Drag and drop files here</p>
+                        <input type="file" multiple className="hidden" ref={fileInputRef} onChange={handleFileSelect} />
+                        <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                          Select Files
+                        </Button>
+                      </div>
+                      <div className="mt-4">
+                        {draggedFiles.length > 0 && (
+                          <div className="space-y-2">
+                            <h3 className="font-medium">Dragged Files</h3>
+                            <ul className="list-disc pl-6">
+                              {draggedFiles.map((fileName, index) => (
+                                <li key={index}>{fileName}</li>
+                              ))}
+                            </ul>
+                            <Button variant="destructive" onClick={clearFiles}>
+                              Clear Files
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
                 </div>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Embedded Map Example</CardTitle>
-                    <CardDescription>Direct iframe embedding with nested content support</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="w-full h-64 border rounded-md overflow-hidden">
-                      <iframe
-                        src="https://www.openstreetmap.org/export/embed.html?bbox=-0.004017949104309083%2C51.47612752641776%2C0.00030577182769775396%2C51.478569861898606&layer=mapnik"
-                        className="w-full h-full"
-                        title="OpenStreetMap"
-                        sandbox="allow-scripts allow-same-origin"
-                      />
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      This is an embedded map showing London. Iframes support nested content and are sandboxed for
-                      security.
-                    </p>
-                  </CardContent>
-                </Card>
               </TabsContent>
             </Tabs>
           </main>
         </div>
-
-        {/* User Edit/Add Dialog */}
-        <Dialog open={isUserDialogOpen} onOpenChange={setIsUserDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{editingUser ? "Edit User" : "Add New User"}</DialogTitle>
-              <DialogDescription>
-                {editingUser ? "Update user information" : "Create a new user account"}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="user-name" className="text-right">
-                  Name
-                </Label>
-                <Input
-                  id="user-name"
-                  value={userForm.name}
-                  onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="user-email" className="text-right">
-                  Email
-                </Label>
-                <Input
-                  id="user-email"
-                  type="email"
-                  value={userForm.email}
-                  onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="user-role" className="text-right">
-                  Role
-                </Label>
-                <Select value={userForm.role} onValueChange={(value) => setUserForm({ ...userForm, role: value })}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="User">User</SelectItem>
-                    <SelectItem value="Admin">Admin</SelectItem>
-                    <SelectItem value="Moderator">Moderator</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="user-status" className="text-right">
-                  Status
-                </Label>
-                <Select value={userForm.status} onValueChange={(value) => setUserForm({ ...userForm, status: value })}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Active">Active</SelectItem>
-                    <SelectItem value="Inactive">Inactive</SelectItem>
-                    <SelectItem value="Pending">Pending</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsUserDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSaveUser}>{editingUser ? "Update" : "Create"}</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Product Edit/Add Dialog */}
-        <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{editingProduct ? "Edit Product" : "Add New Product"}</DialogTitle>
-              <DialogDescription>
-                {editingProduct ? "Update product information" : "Create a new product"}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="product-name" className="text-right">
-                  Name
-                </Label>
-                <Input
-                  id="product-name"
-                  value={productForm.name}
-                  onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="product-category" className="text-right">
-                  Category
-                </Label>
-                <Select
-                  value={productForm.category}
-                  onValueChange={(value) => setProductForm({ ...productForm, category: value })}
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Electronics">Electronics</SelectItem>
-                    <SelectItem value="Audio">Audio</SelectItem>
-                    <SelectItem value="Wearables">Wearables</SelectItem>
-                    <SelectItem value="Accessories">Accessories</SelectItem>
-                    <SelectItem value="Gaming">Gaming</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="product-price" className="text-right">
-                  Price
-                </Label>
-                <Input
-                  id="product-price"
-                  value={productForm.price}
-                  onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
-                  placeholder="$0.00"
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="product-stock" className="text-right">
-                  Stock
-                </Label>
-                <Input
-                  id="product-stock"
-                  type="number"
-                  value={productForm.stock}
-                  onChange={(e) => setProductForm({ ...productForm, stock: Number.parseInt(e.target.value) || 0 })}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="product-rating" className="text-right">
-                  Rating
-                </Label>
-                <Input
-                  id="product-rating"
-                  type="number"
-                  min="0"
-                  max="5"
-                  step="0.1"
-                  value={productForm.rating}
-                  onChange={(e) => setProductForm({ ...productForm, rating: Number.parseFloat(e.target.value) || 0 })}
-                  className="col-span-3"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsProductDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSaveProduct}>{editingProduct ? "Update" : "Create"}</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Iframe Dialog */}
-        <Dialog open={isIframeDialogOpen} onOpenChange={setIsIframeDialogOpen}>
-          <DialogContent className="max-w-4xl max-h-[80vh]">
-            <DialogHeader>
-              <DialogTitle>External Content</DialogTitle>
-              <DialogDescription>
-                This iframe shows external content with nested iframe support and security sandboxing.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="w-full h-96 border rounded-md overflow-hidden">
-              <iframe
-                src={currentIframeUrl}
-                className="w-full h-full"
-                title="External Content"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-              />
-            </div>
-            <DialogFooter>
-              <Button onClick={() => setIsIframeDialogOpen(false)}>Close</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </TooltipProvider>
     </AuthGuard>
   )
